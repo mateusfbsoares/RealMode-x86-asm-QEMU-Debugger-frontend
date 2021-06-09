@@ -12,7 +12,6 @@ kernel_pos = 2
 kernel_size = 20
 
 boot_disk = disk.img
-# boot_disk = kernel.img
 block_size = 512
 disk_size = 100
 
