@@ -1,5 +1,3 @@
-# code originally by https://github.com/mhugo/gdb_init_real_mode
-
 set confirm off
 set verbose off
 set prompt \033[31mreal-mode-gdb$ \033[0m
@@ -231,7 +229,8 @@ define context
 	printf "CODE"
 
   set $_code_size = $CODE_SIZE
-  set $_code_size = 128 
+  #set $_code_size = 128 
+  set $_code_size = 16 
 	set $aux_counter = 1
 
 
