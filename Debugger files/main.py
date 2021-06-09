@@ -68,6 +68,11 @@ def single_step(sender, data):
     gdbmi.write("ni")
     update_context(sender=sender, data=data, is_first_call=False)
 
+def step_over_line(sender, data):
+    gdbmi.write("stepo")
+    update_context(sender=sender, data=data, is_first_call=False)
+
+
 
 gdbmi = realmode_debugger.initialize_session()
 
@@ -84,6 +89,7 @@ with window(stack_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WIN
 with window("Interactive Window", width=int(MAIN_WINDOW_WIDTH), height=int(BOTTOM * (6 / 10)), no_title_bar=True):
     set_window_pos("Interactive Window", 0, MAIN_WINDOW_HEIGHT - BOTTOM)
     add_button("Step", callback=single_step, callback_data=gdbmi)
+    add_button("Step Over Line", callback=step_over_line, callback_data=gdbmi)
 
 update_context(None, data=gdbmi, is_first_call=True)
 
