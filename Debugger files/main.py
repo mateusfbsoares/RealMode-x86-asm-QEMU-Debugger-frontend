@@ -29,7 +29,7 @@ stack_window_name = "STACK"
 
 # Functions definitions #
 def update_context(sender, data, is_first_call=False):
-    array_stack, array_regs_and_flags, array_code = realmode_debugger.get_context(data)
+    array_stack, array_regs_and_flags, array_code = realmode_debugger.get_context(data, is_first_call)
 
     array_code = pretty_prints.pretty_string_from_array(array_code)
     array_regs_and_flags = pretty_prints.pretty_string_from_array(array_regs_and_flags)

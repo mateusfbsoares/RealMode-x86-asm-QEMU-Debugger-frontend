@@ -12,7 +12,7 @@ def trim_by_part_and_type(response, type, part):
 
 def initialize_session():
     # Start gdb process
-    gdbmi = GdbController(['gdb', '-x', '~/.gdbinit', '--interpreter=mi3'])
+    gdbmi = GdbController(['gdb', '-x', './gdbinit', '--interpreter=mi3'])
 
     # Initial commands
     gdbmi.write('target remote localhost:1234')
