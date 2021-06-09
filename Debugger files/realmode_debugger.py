@@ -46,6 +46,13 @@ def get_context(gdbmi, is_first_call=False):
     i += 1
     array_code = output_array[i:]
 
+		# customize code string
+    array_code_aux = []
+    for i in array_code:
+        array_code_aux.append(i.replace("\\n", ''))
+
+    array_code = array_code_aux
+
     # customize registers string
     array_regs = []
     for i in range(7):

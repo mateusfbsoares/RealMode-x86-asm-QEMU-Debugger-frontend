@@ -28,7 +28,9 @@ stack_window_name = "STACK"
 
 
 # Functions definitions #
-def update_context(sender, data, is_first_call=False):
+def update_context(sender, data, is_end_of_program=False, is_first_call=False, update_text=True):
+    current_instruction = ''
+   
     array_stack, array_regs_and_flags, array_code = realmode_debugger.get_context(data, is_first_call)
 
     array_code = pretty_prints.pretty_string_from_array(array_code)
@@ -39,40 +41,68 @@ def update_context(sender, data, is_first_call=False):
     regs_text = str(array_regs_and_flags)
     stack_text = str(array_stack)
 
-    if is_first_call is True:
-        add_text(code_text, parent=code_window_name, wrap=WRAP_SIZE)
-        add_text(stack_text, parent=stack_window_name, wrap=WRAP_SIZE)
-        add_text(regs_text, parent=registers_window_name, wrap=WRAP_SIZE)
+    # if update_text is false, it means we want to use this function to get the current instrucion
+    if update_text is False:
+        first_code_text_line = ""
+        current_char = ''
+        i = 0
+        while current_char!='\n':
+            current_char = code_text[i]
+            first_code_text_line += current_char
+            i += 1
+        # catch interrupts
+        if " int "in first_code_text_line:
+            current_instruction = "int"
+        # catch end of program
+        if "0x7e17" in first_code_text_line:
+            current_instruction = "end_of_program"
+        return current_instruction
 
-    else:
-        # This is probably a very very bad way of doing thigs, but I don't have time now to properly do it.. TODO:
-        #  make it better
-        code_children = get_item_children(code_window_name)
-        for i in code_children:
-            delete_item(i)
+    if update_text is True:
+        if is_first_call is True:
+            add_text(code_text, parent=code_window_name, wrap=WRAP_SIZE)
+            add_text(stack_text, parent=stack_window_name, wrap=WRAP_SIZE)
+            add_text(regs_text, parent=registers_window_name, wrap=WRAP_SIZE)
 
-        regs_children = get_item_children(registers_window_name)
-        for i in regs_children:
-            delete_item(i)
+        else:
+            # This is probably a bad way of doing thigs, but I don't have time now to properly do it.
+            # TODO: write a better way of updating text other than deleting the current and instaciating a new one.
+            code_children = get_item_children(code_window_name)
+            for i in code_children:
+                delete_item(i)
 
-        stack_children = get_item_children(stack_window_name)
-        for i in stack_children:
-            delete_item(i)
+            regs_children = get_item_children(registers_window_name)
+            for i in regs_children:
+                delete_item(i)
 
-        add_text(code_text, parent=code_window_name, wrap=WRAP_SIZE)
-        add_text(regs_text, parent=registers_window_name, wrap=WRAP_SIZE)
-        add_text(stack_text, parent=stack_window_name, wrap=WRAP_SIZE)
+            stack_children = get_item_children(stack_window_name)
+            for i in stack_children:
+                delete_item(i)
+
+            add_text(code_text, parent=code_window_name, wrap=WRAP_SIZE)
+            add_text(regs_text, parent=registers_window_name, wrap=WRAP_SIZE)
+            add_text(stack_text, parent=stack_window_name, wrap=WRAP_SIZE)
 
 
 def single_step(sender, data):
-    gdbmi.write("ni")
-    update_context(sender=sender, data=data, is_first_call=False)
-
-def step_over_line(sender, data):
-    gdbmi.write("stepo")
-    update_context(sender=sender, data=data, is_first_call=False)
-
-
+    current_instruction = ''
+    current_instruction = update_context(sender=sender, data=data, is_first_call=False, update_text=False)
+    if current_instruction=="end_of_program":
+        # this code is repeated from below. TODO: make a separate function "clear_texts" to improve reusability. got no time for that now ;)
+        code_children = get_item_children(code_window_name)
+        for i in code_children:
+            delete_item(i)
+        # TODO: improve reusability here too. same as the TODO above.
+        add_text("\n\n############# Reached End Of Program #############", parent=code_window_name, wrap=WRAP_SIZE)
+        return 1
+ 
+    elif current_instruction=="int":
+        gdbmi.write("stepo")
+        update_context(sender=sender, data=data, is_first_call=False)
+    else:
+        gdbmi.write("ni")
+        update_context(sender=sender, data=data, is_first_call=False)
+    
 
 gdbmi = realmode_debugger.initialize_session()
 
@@ -89,7 +119,6 @@ with window(stack_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WIN
 with window("Interactive Window", width=int(MAIN_WINDOW_WIDTH), height=int(BOTTOM * (6 / 10)), no_title_bar=True):
     set_window_pos("Interactive Window", 0, MAIN_WINDOW_HEIGHT - BOTTOM)
     add_button("Step", callback=single_step, callback_data=gdbmi)
-    add_button("Step Over Line", callback=step_over_line, callback_data=gdbmi)
 
 update_context(None, data=gdbmi, is_first_call=True)
 
