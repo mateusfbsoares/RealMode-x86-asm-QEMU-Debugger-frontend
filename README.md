@@ -1,5 +1,5 @@
 # RealMode-x86-asm-QEMU-Debugger
-A debugger for assembly x86 code runing in Real Mode (tested inside QEMU)
+A debugger for assembly x86 code runing in Real Mode (tested inside QEMU) (based on gdb).
 
 ## How to use
 1. install dependencies --> pip install -r requirements.txt
