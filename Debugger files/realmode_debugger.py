@@ -54,7 +54,9 @@ def get_context(gdbmi, is_first_call=False):
     array_code = array_code_aux
 
     # customize registers string
+    # this is kinda repetitive. TODO: improve this block of code. make it more consise 
     array_regs = []
+    #   remove spaces and \n's
     for i in range(7):
         string = array_regs_and_flags[i]
         string_len_half = int(len(string) / 2)
@@ -62,16 +64,57 @@ def get_context(gdbmi, is_first_call=False):
         array_regs.append(string[string_len_half:].replace(' ', '').replace('\n', ''))
     for i in range(7, len(array_regs_and_flags)):
         array_regs.append(array_regs_and_flags[i].replace(' ', '').replace('\n', ''))
+    #   do more slices
+    array_regs = []
+    for i in range(7):
+        array_regs.append(array_regs_and_flags[i][:9])
+        array_regs.append(array_regs_and_flags[i][9:])
+    for i in range(7, len(array_regs_and_flags)):
+        array_regs.append(array_regs_and_flags[i])
+    array_regs_and_flags = array_regs
+    # the block of code below makes the program incredibly slow, thus, I disabled it. TODO: optimize and enable it 
+    #   add vaue for pointer registers 
+    # for i in range(len(array_regs_and_flags)):
+    #     if "SI" in array_regs_and_flags[i]:
+    #         value = gdbmi.write(f"x {array_regs_and_flags[i][4:9]}")[1]["payload"]
+    #         array_regs_and_flags[i] += f" --> {value}"
+    #     elif "DI" in array_regs_and_flags[i]:
+    #         value = gdbmi.write(f"x {array_regs_and_flags[i][4:9]}")[1]["payload"]
+    #         array_regs_and_flags[i] += f" --> {value}"
+    #     elif "SP" in array_regs_and_flags[i]:
+    #         value = gdbmi.write(f"x {array_regs_and_flags[i][4:9]}")[1]["payload"]
+    #         array_regs_and_flags[i] += f" --> {value}"
+    #     elif "BP" in array_regs_and_flags[i]:
+    #         value = gdbmi.write(f"x {array_regs_and_flags[i][4:9]}")[1]["payload"]
+    #         array_regs_and_flags[i] += f" --> {value}"
+    #     elif "CS" in array_regs_and_flags[i]:
+    #         value = gdbmi.write(f"x {array_regs_and_flags[i][4:9]}")[1]["payload"]
+    #         array_regs_and_flags[i] += f" --> {value}"
+    #     elif "DS" in array_regs_and_flags[i]:
+    #         value = gdbmi.write(f"x {array_regs_and_flags[i][4:9]}")[1]["payload"]
+    #         array_regs_and_flags[i] += f" --> {value}"
+    #     elif "ES" in array_regs_and_flags[i]:
+    #         value = gdbmi.write(f"x {array_regs_and_flags[i][4:9]}")[1]["payload"]
+    #         array_regs_and_flags[i] += f" --> {value}"
+    #     elif "SS" in array_regs_and_flags[i]:
+    #         value = gdbmi.write(f"x {array_regs_and_flags[i][4:9]}")[1]["payload"]
+    #         array_regs_and_flags[i] += f" --> {value}"
+    #     elif "IP" in array_regs_and_flags[i]:
+    #         value = gdbmi.write(f"x {array_regs_and_flags[i][4:9]}")[1]["payload"]
+    #         array_regs_and_flags[i] += f" --> {value}"
 
     # customize stack string
     array_stack.append("")
     array_stack.append("STACK")
     array_stack.reverse()
     array_stack.pop()
-    array_stack[0] += "    ^     - lower memory adresses"
+    array_stack[0] += "     ASCII    ^    INTEGER  - lower memory adresses"
     for i in range(2, len(array_stack)):
-        array_stack[i] += "    |"
-        # if i+1<len(array_stack):
+        ascii = f"{str(bytes.fromhex(array_stack[i]))}"
+        ascii_len = len(ascii)
+        integer = int(array_stack[i],16)
+        space_str = " "
+        array_stack[i] +=  f"  {ascii} {space_str * (15-ascii_len)} {integer}  "
         #     array_stack[i] += '\n'
     array_stack[-1] += "     + higher memory adresses"
 

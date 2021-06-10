@@ -115,15 +115,15 @@ def single_step(sender, data):
 gdbmi = realmode_debugger.initialize_session()
 
 # Program #
-with window(code_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WINDOW_HEIGHT - BOTTOM):
+with window(code_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WINDOW_HEIGHT - BOTTOM, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
     set_window_pos(code_window_name, 0, 0)
 
-with window(registers_window_name, width=int((MAIN_WINDOW_WIDTH / 3)/2), height=MAIN_WINDOW_HEIGHT - BOTTOM):
+with window(registers_window_name, width=int((MAIN_WINDOW_WIDTH / 3)/2), height=MAIN_WINDOW_HEIGHT - BOTTOM, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
     set_window_pos(registers_window_name, int(MAIN_WINDOW_WIDTH / 3), 0)
 
-with window(drawings_window_name, width=int((MAIN_WINDOW_WIDTH / 3)/2) + 3, height=MAIN_WINDOW_HEIGHT - BOTTOM):
+with window(drawings_window_name, width=int((MAIN_WINDOW_WIDTH / 3)/2) + 3, height=MAIN_WINDOW_HEIGHT - BOTTOM, no_scrollbar=True, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
     set_window_pos(drawings_window_name, int(MAIN_WINDOW_WIDTH / 3) + int((MAIN_WINDOW_WIDTH / 3)/2), 0)
-    add_drawing("drawing##widget", width=int((MAIN_WINDOW_WIDTH / 3)/2) + 3, height=int(MAIN_WINDOW_HEIGHT - BOTTOM - 20))
+    add_drawing("drawing##widget", width=int((MAIN_WINDOW_WIDTH / 3)/2) + 3, height=int(MAIN_WINDOW_HEIGHT - BOTTOM))
 
     add_value("arrowY",579)
     add_value("textY", 570)
@@ -132,10 +132,10 @@ with window(drawings_window_name, width=int((MAIN_WINDOW_WIDTH / 3)/2) + 3, heig
     draw_arrow("drawing##widget",[200, 579], [100, 579], [0, 255, 0], 1, 10, tag="movingArrow")
     draw_text("drawing##widget",text="SP", pos=[70, 570], size=18, tag="movingText")
 
-with window(stack_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WINDOW_HEIGHT - BOTTOM):
+with window(stack_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WINDOW_HEIGHT - BOTTOM, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
     set_window_pos(stack_window_name, int(MAIN_WINDOW_WIDTH / 3) * 2, 0)
 
-with window("Interactive Window", width=int(MAIN_WINDOW_WIDTH), height=int(BOTTOM * (6 / 10)), no_title_bar=True):
+with window("Interactive Window", width=int(MAIN_WINDOW_WIDTH), height=int(BOTTOM * (6 / 10)), no_title_bar=True, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
     set_window_pos("Interactive Window", 0, MAIN_WINDOW_HEIGHT - BOTTOM)
     add_button("Step", callback=single_step, callback_data=gdbmi)
 
