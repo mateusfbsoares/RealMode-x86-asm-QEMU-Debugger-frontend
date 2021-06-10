@@ -44,14 +44,16 @@ def get_context(gdbmi, is_first_call=False):
         array_regs_and_flags.append(output_array[i])
         i += 1
     i += 1
-    array_code = output_array[i:]
+    
 
-		# customize code string
-    array_code_aux = []
-    for i in array_code:
-        array_code_aux.append(i.replace("\\n", ''))
+    # get code string
+    # array_code = output_array[i:] # we are not getting the code from the context user-defined command of the gdbinit. below is how we are getting it now.
+    array_code = []
+    full_code = gdbmi.write("x/40i $eip")
+    for i in range(1,len(full_code)-1):
+        array_code.append(full_code[i]["payload"].replace("\\n", ""))
 
-    array_code = array_code_aux
+    # array_code = array_code_aux
 
     # customize registers string
     # this is kinda repetitive. TODO: improve this block of code. make it more consise 

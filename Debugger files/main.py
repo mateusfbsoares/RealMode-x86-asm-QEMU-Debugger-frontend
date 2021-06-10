@@ -108,6 +108,7 @@ def single_step(sender, data):
         gdbmi.write("stepo")
         update_context(sender=sender, data=data, is_first_call=False)
     else:
+
         gdbmi.write("ni")
         update_context(sender=sender, data=data, is_first_call=False)
     
