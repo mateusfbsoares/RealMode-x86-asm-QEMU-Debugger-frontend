@@ -1,9 +1,12 @@
+# TODO: make the code more modular --> create separated .py files for each functionality and improt here
+
 from dearpygui.core import *
 from dearpygui.simple import *
 import pyautogui
 import realmode_debugger
 from utils import pretty_prints
 import time
+from utils import drawings
 
 width, height = pyautogui.size()
 
@@ -25,9 +28,10 @@ set_theme("Dark")
 code_window_name = "CODE"
 registers_window_name = "REGISTERS"
 stack_window_name = "STACK"
+drawings_window_name = ""
 
 
-# Functions definitions #
+# Function definitions #
 def update_context(sender, data, is_end_of_program=False, is_first_call=False, update_text=True):
     current_instruction = ''
    
@@ -56,6 +60,10 @@ def update_context(sender, data, is_end_of_program=False, is_first_call=False, u
         # catch end of program
         if "0x7e17" in first_code_text_line:
             current_instruction = "end_of_program"
+        if " push " in first_code_text_line:
+            drawings.arrowUP()
+        if " pop " in first_code_text_line:
+            drawings.arrowDOWN()
         return current_instruction
 
     if update_text is True:
@@ -110,8 +118,19 @@ gdbmi = realmode_debugger.initialize_session()
 with window(code_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WINDOW_HEIGHT - BOTTOM):
     set_window_pos(code_window_name, 0, 0)
 
-with window(registers_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WINDOW_HEIGHT - BOTTOM):
+with window(registers_window_name, width=int((MAIN_WINDOW_WIDTH / 3)/2), height=MAIN_WINDOW_HEIGHT - BOTTOM):
     set_window_pos(registers_window_name, int(MAIN_WINDOW_WIDTH / 3), 0)
+
+with window(drawings_window_name, width=int((MAIN_WINDOW_WIDTH / 3)/2) + 3, height=MAIN_WINDOW_HEIGHT - BOTTOM):
+    set_window_pos(drawings_window_name, int(MAIN_WINDOW_WIDTH / 3) + int((MAIN_WINDOW_WIDTH / 3)/2), 0)
+    add_drawing("drawing##widget", width=int((MAIN_WINDOW_WIDTH / 3)/2) + 3, height=int(MAIN_WINDOW_HEIGHT - BOTTOM - 20))
+
+    add_value("arrowY",579)
+    add_value("textY", 570)
+
+    # TODO: de-hardcode all the magic values and make this code better.
+    draw_arrow("drawing##widget",[200, 579], [100, 579], [0, 255, 0], 1, 10, tag="movingArrow")
+    draw_text("drawing##widget",text="SP", pos=[70, 570], size=18, tag="movingText")
 
 with window(stack_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WINDOW_HEIGHT - BOTTOM):
     set_window_pos(stack_window_name, int(MAIN_WINDOW_WIDTH / 3) * 2, 0)
@@ -119,6 +138,7 @@ with window(stack_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WIN
 with window("Interactive Window", width=int(MAIN_WINDOW_WIDTH), height=int(BOTTOM * (6 / 10)), no_title_bar=True):
     set_window_pos("Interactive Window", 0, MAIN_WINDOW_HEIGHT - BOTTOM)
     add_button("Step", callback=single_step, callback_data=gdbmi)
+
 
 update_context(None, data=gdbmi, is_first_call=True)
 

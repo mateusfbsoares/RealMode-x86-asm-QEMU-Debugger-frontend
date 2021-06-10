@@ -71,6 +71,8 @@ def get_context(gdbmi, is_first_call=False):
     array_stack[0] += "    ^     - lower memory adresses"
     for i in range(2, len(array_stack)):
         array_stack[i] += "    |"
+        # if i+1<len(array_stack):
+        #     array_stack[i] += '\n'
     array_stack[-1] += "     + higher memory adresses"
 
     return array_stack, array_regs, array_code

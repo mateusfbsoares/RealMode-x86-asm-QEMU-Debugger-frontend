@@ -211,7 +211,7 @@ end
 define context
   #printf "---------------------------[ STACK ]---\n"
 	printf "STACK"
-  _dump_memw $r_ss_sp 32
+  _dump_memw $r_ss_sp 42
   #printf "\n"
   set $_a = $r_ss_sp + 16
   #_dump_memw $_a 8
