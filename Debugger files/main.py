@@ -8,6 +8,9 @@ from utils import pretty_prints
 import time
 from utils import drawings
 
+# The way I'm using global vars is horrible. TODO: fix this as soon as possible!
+import global_vars
+
 width, height = pyautogui.size()
 
 # constants
@@ -32,6 +35,14 @@ drawings_window_name = ""
 
 
 # Function definitions #
+def sendInputToGDB():
+    input_str =get_value("gdbInput")
+    output_str = ""
+    response = gdbmi.write(input_str)
+    for i in range(1,len(response)-1):
+        output_str += str(response[i]["payload"]) + '\n'
+    set_value("gdbOutput", output_str)
+
 def update_context(sender, data, is_end_of_program=False, is_first_call=False, update_text=True):
     current_instruction = ''
    
@@ -58,12 +69,28 @@ def update_context(sender, data, is_end_of_program=False, is_first_call=False, u
         if " int "in first_code_text_line:
             current_instruction = "int"
         # catch end of program
-        if "0x7e17" in first_code_text_line:
-            current_instruction = "end_of_program"
+        # if "0x7e17" in first_code_text_line:
+        #     current_instruction = "end_of_program"
         if " push " in first_code_text_line:
-            drawings.arrowUP()
+            if global_vars.STACK_DEPTH == 0:
+                global_vars.STACK_DEPTH += 1
+                drawings.arrowDOWN()
+                drawings.arrow2DOWN()
+            else:
+                global_vars.STACK_DEPTH += 1
+                drawings.arrow2DOWN()
+
+
         if " pop " in first_code_text_line:
-            drawings.arrowDOWN()
+            if global_vars.STACK_DEPTH == 1:
+                global_vars.STACK_DEPTH -= 1
+                drawings.arrow2UP()
+                drawings.arrowUP()
+            else:
+                global_vars.STACK_DEPTH -= 1
+                drawings.arrow2UP()
+
+
         return current_instruction
 
     if update_text is True:
@@ -124,29 +151,46 @@ with window(registers_window_name, width=int((MAIN_WINDOW_WIDTH / 3)/2), height=
 
 with window(drawings_window_name, width=int((MAIN_WINDOW_WIDTH / 3)/2) + 3, height=MAIN_WINDOW_HEIGHT - BOTTOM, no_scrollbar=True, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
     set_window_pos(drawings_window_name, int(MAIN_WINDOW_WIDTH / 3) + int((MAIN_WINDOW_WIDTH / 3)/2), 0)
+    add_drawing(".", width=int((MAIN_WINDOW_WIDTH / 3)/2) + 3, height=20)
     add_drawing("drawing##widget", width=int((MAIN_WINDOW_WIDTH / 3)/2) + 3, height=int(MAIN_WINDOW_HEIGHT - BOTTOM))
+ 
+    add_value("movingArrowY",8)
+    add_value("movingTextY", 0)
 
-    add_value("arrowY",579)
-    add_value("textY", 570)
+    add_value("movingArrow2Y", -5)
+    add_value("movingText2Y", 0)
 
     # TODO: de-hardcode all the magic values and make this code better.
-    draw_arrow("drawing##widget",[200, 579], [100, 579], [0, 255, 0], 1, 10, tag="movingArrow")
-    draw_text("drawing##widget",text="SP", pos=[70, 570], size=18, tag="movingText")
+    draw_arrow("drawing##widget",[200, 8], [100, 8], [0, 255, 0], 1, 10, tag="movingArrow")
+    draw_text("drawing##widget",text="SP", pos=[70, 0], size=18, tag="movingText")
+
+    draw_arrow("drawing##widget",[200, -5], [100, -5], [255, 0, 0], 1, 10, tag="movingArrow2")
+    draw_text("drawing##widget",text="End of\nStack", pos=[70, 7], size=18, tag="movingText2")
 
 with window(stack_window_name, width=int(MAIN_WINDOW_WIDTH / 3), height=MAIN_WINDOW_HEIGHT - BOTTOM, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
     set_window_pos(stack_window_name, int(MAIN_WINDOW_WIDTH / 3) * 2, 0)
 
-with window("Interactive Window", width=int(MAIN_WINDOW_WIDTH), height=int(BOTTOM * (6 / 10)), no_title_bar=True, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
+with window("Interactive Window", width=int(MAIN_WINDOW_WIDTH/3), height=int(BOTTOM * (6 / 10)), no_title_bar=True, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
     set_window_pos("Interactive Window", 0, MAIN_WINDOW_HEIGHT - BOTTOM)
     add_button("Step", callback=single_step, callback_data=gdbmi)
 
+with window("Interactive Window 2", width=int(MAIN_WINDOW_WIDTH/3), height=int(BOTTOM * (6 / 10)), no_title_bar=True, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
+    set_window_pos("Interactive Window 2", int(MAIN_WINDOW_WIDTH/3), MAIN_WINDOW_HEIGHT - BOTTOM)
+    add_input_text("gdbInput",hint="write to gdb", width=100)
+    add_button("sendInput", callback=sendInputToGDB)
+with window("GDB output", width=int(MAIN_WINDOW_WIDTH/3), height=int(BOTTOM * (6 / 10)), no_title_bar=False, no_close=True, no_bring_to_front_on_focus=True, no_move=True, no_resize=True):
+    set_window_pos("GDB output", int(MAIN_WINDOW_WIDTH/3 * 2), MAIN_WINDOW_HEIGHT - BOTTOM)
+    add_text(name="gdbOutput")
+ 
 
 update_context(None, data=gdbmi, is_first_call=True)
 
 
 def main_callback(sender, data):
-    if is_key_pressed(mvKey_Return) or is_key_pressed(mvKey_Spacebar):
+    print(global_vars.STACK_DEPTH)
+    if is_key_pressed(mvKey_Return):
         single_step(sender, gdbmi)
+
 
 
 set_render_callback(main_callback)

@@ -106,18 +106,18 @@ def get_context(gdbmi, is_first_call=False):
     #         array_regs_and_flags[i] += f" --> {value}"
 
     # customize stack string
+    space_str = " "
     array_stack.append("")
-    array_stack.append("STACK")
     array_stack.reverse()
     array_stack.pop()
-    array_stack[0] += "     ASCII    ^    INTEGER  - lower memory adresses"
     for i in range(2, len(array_stack)):
         ascii = f"{str(bytes.fromhex(array_stack[i]))}"
         ascii_len = len(ascii)
         integer = int(array_stack[i],16)
-        space_str = " "
-        array_stack[i] +=  f"  {ascii} {space_str * (15-ascii_len)} {integer}  "
+        array_stack[i] +=  f"  {ascii} {space_str * (18-ascii_len)} {integer}  "
         #     array_stack[i] += '\n'
-    array_stack[-1] += "     + higher memory adresses"
 
+    array_stack.reverse()
+    array_stack.insert(0, "HEXA     ASCII            INTEGER  - lower memory adresses\n")
+    array_stack[-1] += f"{space_str*36}+ higher memory adresses"
     return array_stack, array_regs, array_code
