@@ -80,7 +80,6 @@ def update_context(sender, data, is_end_of_program=False, is_first_call=False, u
                 global_vars.STACK_DEPTH += 1
                 drawings.arrow2DOWN()
 
-
         if " pop " in first_code_text_line:
             if global_vars.STACK_DEPTH == 1:
                 global_vars.STACK_DEPTH -= 1
@@ -89,6 +88,31 @@ def update_context(sender, data, is_end_of_program=False, is_first_call=False, u
             else:
                 global_vars.STACK_DEPTH -= 1
                 drawings.arrow2UP()
+        if "add " in first_code_text_line and "sp" in first_code_text_line:
+            hex_number = first_code_text_line.split(',')[1]
+            number = int(hex_number, 16)
+            number = int(number/2)
+            for i in range(number):
+                if global_vars.STACK_DEPTH == 1:
+                    global_vars.STACK_DEPTH -= 1
+                    drawings.arrow2UP()
+                    drawings.arrowUP()
+                else:
+                    global_vars.STACK_DEPTH -= 1
+                    drawings.arrow2UP()
+
+        if "sub " in first_code_text_line and "sp" in first_code_text_line:
+            hex_number = first_code_text_line.split(',')[1]
+            number = int(hex_number, 16)
+            number = int(number / 2)
+            for i in range(number):
+                if global_vars.STACK_DEPTH == 0:
+                    global_vars.STACK_DEPTH += 1
+                    drawings.arrowDOWN()
+                    drawings.arrow2DOWN()
+                else:
+                    global_vars.STACK_DEPTH += 1
+                    drawings.arrow2DOWN()
 
 
         return current_instruction
@@ -187,7 +211,6 @@ update_context(None, data=gdbmi, is_first_call=True)
 
 
 def main_callback(sender, data):
-    print(global_vars.STACK_DEPTH)
     if is_key_pressed(mvKey_Return):
         single_step(sender, gdbmi)
 

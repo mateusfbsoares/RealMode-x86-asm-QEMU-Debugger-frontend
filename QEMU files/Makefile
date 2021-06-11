@@ -16,6 +16,7 @@ block_size = 512
 disk_size = 100
 
 nasm_flags = -f bin
+# qemu_flags = -fda 
 qemu_flags = -S -s -fda 
 
 all: create_disk boot1_only boot2_only kernel_only write_boot1 write_boot2 write_kernel launch_qemu clean
